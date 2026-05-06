@@ -206,6 +206,7 @@ namespace Tests
 
             var preprocessResponse = await _client.V1.Music_cover_preprocess.PostAsync(preprocessRequest);
             Assert.NotNull(preprocessResponse);
+            Assert.NotNull(preprocessResponse.BaseResp);
             Assert.True(preprocessResponse.BaseResp.StatusCode == 0, "Preprocess failed");
             Assert.NotNull(preprocessResponse.CoverFeatureId);
             Console.WriteLine($"CoverFeatureId: {preprocessResponse.CoverFeatureId}");

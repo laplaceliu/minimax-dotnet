@@ -52,9 +52,10 @@ namespace Tests
             Assert.True(response.BaseResp.StatusCode == 0 || response.BaseResp.StatusCode == 1000, $"StatusCode: {response.BaseResp.StatusCode}");
             Assert.NotNull(response.Choices);
             Assert.NotEmpty(response.Choices);
-            Assert.NotNull(response.Choices[0].Message);
-            Assert.NotNull(response.Choices[0].Message.Content);
-            Console.WriteLine("Response: " + response.Choices[0].Message.Content);
+            var firstChoice = response.Choices[0];
+            Assert.NotNull(firstChoice.Message);
+            Assert.NotNull(firstChoice.Message.Content);
+            Console.WriteLine("Response: " + firstChoice.Message.Content);
         }
     }
 }

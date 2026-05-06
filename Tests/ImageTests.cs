@@ -82,6 +82,7 @@ namespace Tests
 
             Assert.NotNull(t2iResponse);
             Assert.NotNull(t2iResponse.Data);
+            Assert.NotNull(t2iResponse.Data.ImageUrls);
             Assert.NotEmpty(t2iResponse.Data.ImageUrls);
 
             var inputPath = await DownloadImageAsync(t2iResponse.Data.ImageUrls[0], "i2i_input.jpg");
@@ -113,6 +114,7 @@ namespace Tests
             Assert.NotNull(i2iResponse.BaseResp);
             Assert.True(i2iResponse.BaseResp.StatusCode == 0, $"StatusCode: {i2iResponse.BaseResp.StatusCode}");
             Assert.NotNull(i2iResponse.Data);
+            Assert.NotNull(i2iResponse.Data.ImageUrls);
             Assert.NotEmpty(i2iResponse.Data.ImageUrls);
 
             var outputPath = await DownloadImageAsync(i2iResponse.Data.ImageUrls[0], "i2i_output.jpg");

@@ -128,6 +128,7 @@ namespace Tests
             var uploadResponse = await _client.V1.Files.Upload.PostAsync(uploadBody);
 
             Assert.NotNull(uploadResponse);
+            Assert.NotNull(uploadResponse.BaseResp);
             Assert.True(uploadResponse.BaseResp.StatusCode == 0, "Upload failed");
             Assert.NotNull(uploadResponse.File);
             var fileId = uploadResponse.File.FileId;
@@ -164,6 +165,7 @@ namespace Tests
             var uploadResponse = await _client.V1.Files.Upload.PostAsync(uploadBody);
 
             Assert.NotNull(uploadResponse);
+            Assert.NotNull(uploadResponse.BaseResp);
             Assert.True(uploadResponse.BaseResp.StatusCode == 0, "Upload failed");
             Assert.NotNull(uploadResponse.File);
             var fileId = uploadResponse.File.FileId;
@@ -172,6 +174,7 @@ namespace Tests
             var retrieveResponse = await _client.V1.Files.Retrieve.GetAsync(x => x.QueryParameters.FileId = fileId);
 
             Assert.NotNull(retrieveResponse);
+            Assert.NotNull(retrieveResponse.BaseResp);
             Assert.True(retrieveResponse.BaseResp.StatusCode == 0, "Retrieve failed");
             Assert.NotNull(retrieveResponse.File);
             Console.WriteLine($"Retrieved File - FileId: {retrieveResponse.File.FileId}, Filename: {retrieveResponse.File.Filename}");
