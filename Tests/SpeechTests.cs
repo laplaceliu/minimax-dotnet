@@ -205,6 +205,149 @@ namespace Tests
             await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
 
+        [Fact]
+        public async Task T2a_Async_Create_And_Query()
+        {
+            var request = new T2AAsyncV2Req
+            {
+                Model = T2AAsyncV2Req_model.Speech28Hd,
+                Text = "This is a test for async text-to-speech synthesis. The async API is designed for processing large amounts of text content.",
+                VoiceSetting = new T2AAsyncV2VoiceSetting
+                {
+                    VoiceId = "male-qn-qingse",
+                    Speed = 1.0f,
+                    Vol = 1.0f,
+                    Pitch = 0
+                },
+                AudioSetting = new T2AAsyncV2AudioSetting
+                {
+                    AudioSampleRate = 32000,
+                    Bitrate = 128000,
+                    Format = T2AAsyncV2AudioSetting_format.Mp3,
+                    Channel = 1
+                }
+            };
+
+            var createResponse = await _client.V1.T2a_async_v2.PostAsync(request);
+
+            Assert.NotNull(createResponse);
+            Assert.NotNull(createResponse.BaseResp);
+            Console.WriteLine($"Create StatusCode: {createResponse.BaseResp.StatusCode}, StatusMsg: {createResponse.BaseResp.StatusMsg}");
+            Assert.True(createResponse.BaseResp.StatusCode == 0, $"StatusCode: {createResponse.BaseResp.StatusCode}");
+
+            Console.WriteLine($"Response JSON: {System.Text.Json.JsonSerializer.Serialize(createResponse)}");
+
+            long? taskId = null;
+            if (!string.IsNullOrEmpty(createResponse.TaskId))
+            {
+                taskId = long.Parse(createResponse.TaskId);
+                Console.WriteLine($"TaskId from property: {taskId}");
+            }
+            else if (createResponse.FileId.HasValue)
+            {
+                taskId = createResponse.FileId;
+                Console.WriteLine($"TaskId from FileId property: {taskId}");
+            }
+
+            Assert.True(taskId != null, $"TaskId is null. Response JSON: {System.Text.Json.JsonSerializer.Serialize(createResponse)}");
+            Console.WriteLine($"Parsed TaskId: {taskId}, FileId: {createResponse.FileId}");
+
+            var queryResponse = await _client.V1.Query.T2a_async_query_v2.GetAsync(x => x.QueryParameters.TaskId = taskId);
+
+            Assert.NotNull(queryResponse);
+            Assert.NotNull(queryResponse.BaseResp);
+            Console.WriteLine($"Query StatusCode: {queryResponse.BaseResp.StatusCode}, Status: {queryResponse.Status}");
+            Assert.True(queryResponse.BaseResp.StatusCode == 0, $"StatusCode: {queryResponse.BaseResp.StatusCode}");
+            Console.WriteLine($"Task Status: {queryResponse.Status}");
+        }
+
+        [Fact]
+        public async Task T2a_Async_With_File_Download()
+        {
+            var createRequest = new T2AAsyncV2Req
+            {
+                Model = T2AAsyncV2Req_model.Speech28Hd,
+                Text = "Hello world, this is async speech synthesis test.",
+                VoiceSetting = new T2AAsyncV2VoiceSetting
+                {
+                    VoiceId = "male-qn-qingse",
+                    Speed = 1.0f,
+                    Vol = 1.0f,
+                    Pitch = 0
+                },
+                AudioSetting = new T2AAsyncV2AudioSetting
+                {
+                    AudioSampleRate = 32000,
+                    Bitrate = 128000,
+                    Format = T2AAsyncV2AudioSetting_format.Mp3,
+                    Channel = 1
+                }
+            };
+
+            var createResponse = await _client.V1.T2a_async_v2.PostAsync(createRequest);
+
+            Assert.NotNull(createResponse);
+            Assert.NotNull(createResponse.BaseResp);
+            Assert.True(createResponse.BaseResp.StatusCode == 0, $"Create StatusCode: {createResponse.BaseResp.StatusCode}");
+
+            long? taskId = null;
+            if (!string.IsNullOrEmpty(createResponse.TaskId))
+            {
+                taskId = long.Parse(createResponse.TaskId);
+            }
+            else if (createResponse.FileId.HasValue)
+            {
+                taskId = createResponse.FileId;
+            }
+
+            Assert.True(taskId != null, $"TaskId is null");
+            long? fileId = createResponse.FileId;
+
+            Console.WriteLine($"Created task: {taskId}, file_id: {fileId}");
+
+            T2AAsyncV2QueryResp_status? status = null;
+            long? resultFileId = null;
+
+            for (int i = 0; i < 30; i++)
+            {
+                await Task.Delay(2000);
+
+                var queryResponse = await _client.V1.Query.T2a_async_query_v2.GetAsync(x => x.QueryParameters.TaskId = taskId);
+
+                Assert.NotNull(queryResponse);
+                Assert.NotNull(queryResponse.BaseResp);
+                Assert.True(queryResponse.BaseResp.StatusCode == 0, $"Query StatusCode: {queryResponse.BaseResp.StatusCode}");
+
+                status = queryResponse.Status;
+                resultFileId = queryResponse.FileId;
+
+                Console.WriteLine($"Poll {i + 1}: Status = {status}, FileId = {resultFileId}");
+
+                if (status == T2AAsyncV2QueryResp_status.Success || status == T2AAsyncV2QueryResp_status.Failed)
+                    break;
+            }
+
+            Assert.Equal(T2AAsyncV2QueryResp_status.Success, status);
+            Assert.NotNull(resultFileId);
+            Assert.True(resultFileId > 0);
+
+            Console.WriteLine($"Downloading file_id: {resultFileId}");
+
+            var fileStream = await _client.V1.Files.Retrieve_content.GetAsync(x => x.QueryParameters.FileId = resultFileId);
+
+            Assert.NotNull(fileStream);
+            var memoryStream = new MemoryStream();
+            await fileStream.CopyToAsync(memoryStream);
+            var audioBytes = memoryStream.ToArray();
+
+            Assert.True(audioBytes.Length > 0, "Downloaded audio is empty");
+            Console.WriteLine($"Downloaded audio size: {audioBytes.Length} bytes");
+
+            var audioPath = Path.Combine(_outputDir, "async_audio.mp3");
+            await File.WriteAllBytesAsync(audioPath, audioBytes);
+            Console.WriteLine($"Audio saved to: {audioPath}");
+        }
+
         private static byte[] HexToBytes(string hex)
         {
             if (string.IsNullOrEmpty(hex)) return Array.Empty<byte>();
