@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Microsoft.Kiota.Abstractions;
-using Microsoft.Kiota.Abstractions.Authentication;
 using Xunit;
 using MiniMax.Models;
 using MiniMaxClient = MiniMax.MiniMaxClient;
@@ -58,30 +55,6 @@ namespace Tests
             Assert.NotNull(response.Choices[0].Message);
             Assert.NotNull(response.Choices[0].Message.Content);
             Console.WriteLine("Response: " + response.Choices[0].Message.Content);
-        }
-    }
-
-    internal class AuthHandler : DelegatingHandler
-    {
-        private readonly string _apiKey;
-
-        public AuthHandler(HttpMessageHandler innerHandler, string apiKey) : base(innerHandler)
-        {
-            _apiKey = apiKey;
-        }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _apiKey);
-            return await base.SendAsync(request, cancellationToken);
-        }
-    }
-
-    internal class FixedAuthProvider : IAuthenticationProvider
-    {
-        public Task AuthenticateRequestAsync(RequestInformation request, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
         }
     }
 }
