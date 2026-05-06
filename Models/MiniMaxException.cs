@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace MiniMax.Models
+namespace MiniMax
 {
     [Serializable]
     public class MiniMaxException : Exception

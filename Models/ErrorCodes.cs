@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MiniMax.Models
+namespace MiniMax
 {
     public static class ErrorCodes
     {

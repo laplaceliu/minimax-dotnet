@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Microsoft.Kiota.Abstractions;
 using Xunit;
+using MiniMax;
 using MiniMax.Models;
 using MiniMaxClient = MiniMax.MiniMaxClient;
 
