@@ -1,0 +1,191 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Kiota.Http.HttpClientLibrary;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Serialization;
+using Xunit;
+using MiniMax.Models;
+using MiniMaxClient = MiniMax.MiniMaxClient;
+using MiniMax.V1.Files.List;
+using MiniMax.V1.Files.Delete;
+
+namespace Tests
+{
+    public class FileTests : IDisposable
+    {
+        private readonly HttpClient _httpClient;
+        private readonly MiniMaxClient _client;
+        private readonly string _outputDir;
+
+        public FileTests()
+        {
+            var apiKey = Environment.GetEnvironmentVariable("MINIMAX_API_KEY") ?? throw new InvalidOperationException("MINIMAX_API_KEY not set");
+            var authHandler = new AuthHandler(new HttpClientHandler(), apiKey);
+            _httpClient = new HttpClient(authHandler);
+            var adapter = new HttpClientRequestAdapter(new FixedAuthProvider(), null, null, _httpClient, null);
+            _client = new MiniMaxClient(adapter);
+            _outputDir = Path.Combine(Path.GetTempPath(), "minimax-file-tests");
+            Directory.CreateDirectory(_outputDir);
+        }
+
+        public void Dispose()
+        {
+            _httpClient.Dispose();
+        }
+
+        [Fact]
+        public async Task File_Upload_Text_Success()
+        {
+            var testFilePath = Path.Combine(_outputDir, "test_input.txt");
+            var testContent = "This is a test file for async TTS synthesis. Hello world!";
+            await File.WriteAllTextAsync(testFilePath, testContent);
+
+            var fileBytes = await File.ReadAllBytesAsync(testFilePath);
+            var body = new MultipartBody();
+            body.AddOrReplacePart("purpose", "text/plain", "t2a_async_input", null);
+            body.AddOrReplacePart("file", "text/plain", fileBytes, "test_input.txt");
+
+            var response = await _client.V1.Files.Upload.PostAsync(body);
+
+            Assert.NotNull(response);
+            Assert.NotNull(response.BaseResp);
+            Console.WriteLine($"Upload StatusCode: {response.BaseResp.StatusCode}, StatusMsg: {response.BaseResp.StatusMsg}");
+            Assert.True(response.BaseResp.StatusCode == 0, $"StatusCode: {response.BaseResp.StatusCode}");
+            Assert.NotNull(response.File);
+            Assert.True(response.File.FileId > 0, "FileId should be positive");
+            Console.WriteLine($"Uploaded FileId: {response.File.FileId}, Filename: {response.File.Filename}");
+
+            File.Delete(testFilePath);
+        }
+
+        [Fact]
+        public async Task File_List_Success()
+        {
+            var response = await _client.V1.Files.List.GetAsync(x =>
+            {
+                x.QueryParameters.PurposeAsGetPurposeQueryParameterType = GetPurposeQueryParameterType.T2a_async_input;
+            });
+
+            Assert.NotNull(response);
+            Assert.NotNull(response.BaseResp);
+            Console.WriteLine($"List StatusCode: {response.BaseResp.StatusCode}, StatusMsg: {response.BaseResp.StatusMsg}");
+            Assert.True(response.BaseResp.StatusCode == 0, $"StatusCode: {response.BaseResp.StatusCode}");
+
+            if (response.Files != null)
+            {
+                Console.WriteLine($"Found {response.Files.Count} files");
+                foreach (var file in response.Files)
+                {
+                    Console.WriteLine($"  FileId: {file.FileId}, Filename: {file.Filename}, Bytes: {file.Bytes}");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task File_Retrieve_Success()
+        {
+            var listResponse = await _client.V1.Files.List.GetAsync(x =>
+            {
+                x.QueryParameters.PurposeAsGetPurposeQueryParameterType = GetPurposeQueryParameterType.T2a_async_input;
+            });
+
+            Assert.NotNull(listResponse);
+            Assert.NotNull(listResponse.Files);
+            Assert.True(listResponse.Files.Count > 0, "No files found to retrieve");
+
+            var firstFileId = listResponse.Files[0].FileId;
+            Console.WriteLine($"Retrieving file_id: {firstFileId}");
+
+            var retrieveResponse = await _client.V1.Files.Retrieve.GetAsync(x =>
+            {
+                x.QueryParameters.FileId = firstFileId;
+            });
+
+            Assert.NotNull(retrieveResponse);
+            Assert.NotNull(retrieveResponse.BaseResp);
+            Console.WriteLine($"Retrieve StatusCode: {retrieveResponse.BaseResp.StatusCode}, StatusMsg: {retrieveResponse.BaseResp.StatusMsg}");
+            Assert.True(retrieveResponse.BaseResp.StatusCode == 0, $"StatusCode: {retrieveResponse.BaseResp.StatusCode}");
+            Assert.NotNull(retrieveResponse.File);
+            Console.WriteLine($"Retrieved FileId: {retrieveResponse.File.FileId}, Filename: {retrieveResponse.File.Filename}, Bytes: {retrieveResponse.File.Bytes}");
+        }
+
+        [Fact]
+        public async Task File_Delete_Success()
+        {
+            var testFilePath = Path.Combine(_outputDir, "test_delete.txt");
+            var testContent = "This is a test file for deletion test.";
+            await File.WriteAllTextAsync(testFilePath, testContent);
+
+            var fileBytes = await File.ReadAllBytesAsync(testFilePath);
+            var uploadBody = new MultipartBody();
+            uploadBody.AddOrReplacePart("purpose", "text/plain", "t2a_async_input", null);
+            uploadBody.AddOrReplacePart("file", "text/plain", fileBytes, "test_delete.txt");
+
+            var uploadResponse = await _client.V1.Files.Upload.PostAsync(uploadBody);
+
+            Assert.NotNull(uploadResponse);
+            Assert.True(uploadResponse.BaseResp.StatusCode == 0, "Upload failed");
+            Assert.NotNull(uploadResponse.File);
+            var fileId = uploadResponse.File.FileId;
+            Console.WriteLine($"Uploaded file for deletion: {fileId}");
+
+            var deleteRequest = new DeleteFileReq
+            {
+                FileId = fileId,
+                Purpose = DeleteFileReq_purpose.T2a_async_input
+            };
+
+            var deleteResponse = await _client.V1.Files.DeletePath.PostAsync(deleteRequest);
+
+            Assert.NotNull(deleteResponse);
+            Assert.NotNull(deleteResponse.BaseResp);
+            Console.WriteLine($"Delete StatusCode: {deleteResponse.BaseResp.StatusCode}, StatusMsg: {deleteResponse.BaseResp.StatusMsg}");
+            Assert.True(deleteResponse.BaseResp.StatusCode == 0, $"Delete failed with status: {deleteResponse.BaseResp.StatusCode}");
+
+            File.Delete(testFilePath);
+        }
+
+        [Fact]
+        public async Task File_Upload_And_Download()
+        {
+            var testContent = "This is a test file for upload and download test. Hello, MiniMax!";
+            var testFilePath = Path.Combine(_outputDir, "test_upload_download.txt");
+            await File.WriteAllTextAsync(testFilePath, testContent);
+
+            var fileBytes = await File.ReadAllBytesAsync(testFilePath);
+            var uploadBody = new MultipartBody();
+            uploadBody.AddOrReplacePart("purpose", "text/plain", "t2a_async_input", null);
+            uploadBody.AddOrReplacePart("file", "text/plain", fileBytes, "test_upload_download.txt");
+
+            var uploadResponse = await _client.V1.Files.Upload.PostAsync(uploadBody);
+
+            Assert.NotNull(uploadResponse);
+            Assert.True(uploadResponse.BaseResp.StatusCode == 0, "Upload failed");
+            Assert.NotNull(uploadResponse.File);
+            var fileId = uploadResponse.File.FileId;
+            Console.WriteLine($"Uploaded file_id: {fileId}");
+
+            var retrieveResponse = await _client.V1.Files.Retrieve.GetAsync(x => x.QueryParameters.FileId = fileId);
+
+            Assert.NotNull(retrieveResponse);
+            Assert.True(retrieveResponse.BaseResp.StatusCode == 0, "Retrieve failed");
+            Assert.NotNull(retrieveResponse.File);
+            Console.WriteLine($"Retrieved File - FileId: {retrieveResponse.File.FileId}, Filename: {retrieveResponse.File.Filename}");
+
+            var fileStreamDownload = await _client.V1.Files.Retrieve_content.GetAsync(x => x.QueryParameters.FileId = fileId);
+            Assert.NotNull(fileStreamDownload);
+
+            using var memoryStream = new MemoryStream();
+            await fileStreamDownload.CopyToAsync(memoryStream);
+            var downloadedBytes = memoryStream.ToArray();
+            Assert.True(downloadedBytes.Length > 0, "Downloaded file is empty");
+            Console.WriteLine($"Downloaded file size: {downloadedBytes.Length} bytes");
+
+            File.Delete(testFilePath);
+        }
+    }
+}
