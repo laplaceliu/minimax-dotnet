@@ -3,13 +3,17 @@ using System.Runtime.Serialization;
 using System;
 namespace MiniMax.Models
 {
-    /// <summary>模型名称。可用值： `MiniMax-Hailuo-2.3`, `MiniMax-Hailuo-02`, `T2V-01-Director`, `T2V-01`.</summary>
+    /// <summary>模型名称。可用值：- T2V: `MiniMax-Hailuo-2.3`, `MiniMax-Hailuo-02`, `T2V-01-Director`, `T2V-01`- I2V: `MiniMax-Hailuo-2.3`, `MiniMax-Hailuo-2.3-Fast`, `MiniMax-Hailuo-02`, `I2V-01-Director`, `I2V-01-live`, `I2V-01`</summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     public enum VideoGenerationReq_model
     {
         [EnumMember(Value = "MiniMax-Hailuo-2.3")]
         #pragma warning disable CS1591
         MiniMaxHailuo23,
+        #pragma warning restore CS1591
+        [EnumMember(Value = "MiniMax-Hailuo-2.3-Fast")]
+        #pragma warning disable CS1591
+        MiniMaxHailuo23Fast,
         #pragma warning restore CS1591
         [EnumMember(Value = "MiniMax-Hailuo-02")]
         #pragma warning disable CS1591
@@ -22,6 +26,18 @@ namespace MiniMax.Models
         [EnumMember(Value = "T2V-01")]
         #pragma warning disable CS1591
         T2V01,
+        #pragma warning restore CS1591
+        [EnumMember(Value = "I2V-01-Director")]
+        #pragma warning disable CS1591
+        I2V01Director,
+        #pragma warning restore CS1591
+        [EnumMember(Value = "I2V-01-live")]
+        #pragma warning disable CS1591
+        I2V01Live,
+        #pragma warning restore CS1591
+        [EnumMember(Value = "I2V-01")]
+        #pragma warning disable CS1591
+        I2V01,
         #pragma warning restore CS1591
     }
 }

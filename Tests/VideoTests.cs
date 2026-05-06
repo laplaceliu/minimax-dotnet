@@ -154,5 +154,49 @@ namespace Tests
             var bytes = await response.Content.ReadAsByteArrayAsync();
             await File.WriteAllBytesAsync(outputPath, bytes);
         }
+
+        [Fact]
+        public async Task Video_I2V_Generation_Create_Success()
+        {
+            var imageRequest = new ImageGenerationReq
+            {
+                Model = ImageGenerationReq_model.Image01,
+                Prompt = "A cute cat sitting on a windowsill, photorealistic, high quality",
+                AspectRatio = ImageGenerationReq_aspect_ratio.OneSixNine,
+                ResponseFormat = ImageGenerationReq_response_format.Url,
+                N = 1
+            };
+
+            var imageResponse = await _client.V1.Image_generation.PostAsync(imageRequest);
+            Assert.NotNull(imageResponse);
+            Assert.NotNull(imageResponse.BaseResp);
+            Assert.True(imageResponse.BaseResp.StatusCode == 0, $"Image generation failed: {imageResponse.BaseResp.StatusCode}");
+            Assert.NotNull(imageResponse.Data);
+            Assert.NotNull(imageResponse.Data.ImageUrls);
+            Assert.True(imageResponse.Data.ImageUrls.Count > 0, "No image URLs returned");
+            var imageUrl = imageResponse.Data.ImageUrls[0];
+            Console.WriteLine($"Generated image URL: {imageUrl}");
+
+            var videoRequest = new VideoGenerationReq
+            {
+                Model = VideoGenerationReq_model.MiniMaxHailuo23Fast,
+                Prompt = "The cat looks around curiously and stretches [固定]",
+                Duration = 6,
+                Resolution = VideoGenerationReq_resolution.SevenSixEightP,
+                PromptOptimizer = false
+            };
+            videoRequest.AdditionalData["first_frame_image"] = imageUrl;
+
+            var videoResponse = await _client.V1.Video_generation.PostAsync(videoRequest);
+            Assert.NotNull(videoResponse);
+            Assert.NotNull(videoResponse.BaseResp);
+            Assert.True(videoResponse.BaseResp.StatusCode == 0, $"Video creation failed: {videoResponse.BaseResp.StatusCode} - {videoResponse.BaseResp.StatusMsg}");
+            Assert.NotNull(videoResponse.TaskId);
+            Console.WriteLine($"I2V Task created successfully!");
+            Console.WriteLine($"TaskId: {videoResponse.TaskId}");
+
+            await File.WriteAllTextAsync(_taskIdFile, videoResponse.TaskId);
+            Console.WriteLine($"TaskId saved to: {_taskIdFile}");
+        }
     }
 }
