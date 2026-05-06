@@ -7,34 +7,30 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Kiota.Http.HttpClientLibrary;
-using Microsoft.Kiota.Abstractions;
 using Xunit;
+using MiniMax;
 using MiniMax.Models;
-using MiniMaxClient = MiniMax.MiniMaxClient;
+using MiniMax.Models.Speech;
+using static MiniMax.Models.Enums;
 
 namespace Tests
 {
     public class SpeechTests : IDisposable
     {
-        private readonly HttpClient _httpClient;
         private readonly MiniMaxClient _client;
         private readonly string _outputDir;
 
         public SpeechTests()
         {
             var apiKey = Environment.GetEnvironmentVariable("MINIMAX_API_KEY") ?? throw new InvalidOperationException("MINIMAX_API_KEY not set");
-            var authHandler = new AuthHandler(new HttpClientHandler(), apiKey);
-            _httpClient = new HttpClient(authHandler);
-            var adapter = new HttpClientRequestAdapter(new FixedAuthProvider(), null, null, _httpClient, null);
-            _client = new MiniMaxClient(adapter);
+            _client = new MiniMaxClient(apiKey);
             _outputDir = Path.Combine(Path.GetTempPath(), "minimax-speech-tests");
             Directory.CreateDirectory(_outputDir);
         }
 
         public void Dispose()
         {
-            _httpClient.Dispose();
+            _client.Dispose();
         }
 
         [Fact]
@@ -42,27 +38,25 @@ namespace Tests
         {
             var request = new T2aV2Req
             {
-                Model = T2aV2Req_model.Speech28Hd,
+                Model = SpeechModel.Speech28Hd,
                 Text = "Hello, this is a test.",
                 Stream = false,
-                VoiceSetting = new T2AVoiceSetting
+                VoiceSetting = new T2aV2VoiceSetting
                 {
                     VoiceId = "male-qn-qingse",
                     Speed = 1.0f,
                     Vol = 1.0f,
                     Pitch = 0
                 },
-                AudioSetting = new T2AAudioSetting
+                AudioSetting = new T2aV2AudioSetting
                 {
-                    SampleRate = 32000,
-                    Bitrate = 128000,
-                    Format = T2AAudioSetting_format.Mp3,
-                    Channel = 1
-                },
-                OutputFormat = T2aV2Req_output_format.Hex
+                    SampleRate = AudioSampleRate.Rate32000,
+                    Bitrate = AudioBitrate.Rate128000,
+                    Format = AudioFormat.Mp3
+                }
             };
 
-            var response = await _client.V1.T2a_v2.PostAsync(request);
+            var response = await _client.TextToAudioAsync(request);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
@@ -210,7 +204,7 @@ namespace Tests
         {
             var request = new T2AAsyncV2Req
             {
-                Model = T2AAsyncV2Req_model.Speech28Hd,
+                Model = SpeechModel.Speech28Hd,
                 Text = "This is a test for async text-to-speech synthesis. The async API is designed for processing large amounts of text content.",
                 VoiceSetting = new T2AAsyncV2VoiceSetting
                 {
@@ -221,38 +215,36 @@ namespace Tests
                 },
                 AudioSetting = new T2AAsyncV2AudioSetting
                 {
-                    AudioSampleRate = 32000,
-                    Bitrate = 128000,
-                    Format = T2AAsyncV2AudioSetting_format.Mp3,
+                    SampleRate = AudioSampleRate.Rate32000,
+                    Bitrate = AudioBitrate.Rate128000,
+                    Format = AudioFormat.Mp3,
                     Channel = 1
                 }
             };
 
-            var createResponse = await _client.V1.T2a_async_v2.PostAsync(request);
+            var createResponse = await _client.TextToAudioAsyncCreateAsync(request);
 
             Assert.NotNull(createResponse);
             Assert.NotNull(createResponse.BaseResp);
             Console.WriteLine($"Create StatusCode: {createResponse.BaseResp.StatusCode}, StatusMsg: {createResponse.BaseResp.StatusMsg}");
             Assert.True(createResponse.BaseResp.StatusCode == 0, $"StatusCode: {createResponse.BaseResp.StatusCode}");
 
-            Console.WriteLine($"Response JSON: {System.Text.Json.JsonSerializer.Serialize(createResponse)}");
-
             long? taskId = null;
-            if (!string.IsNullOrEmpty(createResponse.TaskId))
+            if (createResponse.TaskId != null)
             {
-                taskId = long.Parse(createResponse.TaskId);
+                taskId = Convert.ToInt64(createResponse.TaskId);
                 Console.WriteLine($"TaskId from property: {taskId}");
             }
-            else if (createResponse.FileId.HasValue)
+            else if (createResponse.FileId != null)
             {
                 taskId = createResponse.FileId;
                 Console.WriteLine($"TaskId from FileId property: {taskId}");
             }
 
-            Assert.True(taskId != null, $"TaskId is null. Response JSON: {System.Text.Json.JsonSerializer.Serialize(createResponse)}");
-            Console.WriteLine($"Parsed TaskId: {taskId}, FileId: {createResponse.FileId}");
+            Assert.True(taskId != null, $"TaskId is null");
+            Console.WriteLine($"Parsed TaskId: {taskId}");
 
-            var queryResponse = await _client.V1.Query.T2a_async_query_v2.GetAsync(x => x.QueryParameters.TaskId = taskId);
+            var queryResponse = await _client.TextToAudioAsyncQueryAsync(taskId.Value);
 
             Assert.NotNull(queryResponse);
             Assert.NotNull(queryResponse.BaseResp);
@@ -266,7 +258,7 @@ namespace Tests
         {
             var createRequest = new T2AAsyncV2Req
             {
-                Model = T2AAsyncV2Req_model.Speech28Hd,
+                Model = SpeechModel.Speech28Hd,
                 Text = "Hello world, this is async speech synthesis test.",
                 VoiceSetting = new T2AAsyncV2VoiceSetting
                 {
@@ -277,42 +269,40 @@ namespace Tests
                 },
                 AudioSetting = new T2AAsyncV2AudioSetting
                 {
-                    AudioSampleRate = 32000,
-                    Bitrate = 128000,
-                    Format = T2AAsyncV2AudioSetting_format.Mp3,
+                    SampleRate = AudioSampleRate.Rate32000,
+                    Bitrate = AudioBitrate.Rate128000,
+                    Format = AudioFormat.Mp3,
                     Channel = 1
                 }
             };
 
-            var createResponse = await _client.V1.T2a_async_v2.PostAsync(createRequest);
+            var createResponse = await _client.TextToAudioAsyncCreateAsync(createRequest);
 
             Assert.NotNull(createResponse);
             Assert.NotNull(createResponse.BaseResp);
             Assert.True(createResponse.BaseResp.StatusCode == 0, $"Create StatusCode: {createResponse.BaseResp.StatusCode}");
 
             long? taskId = null;
-            if (!string.IsNullOrEmpty(createResponse.TaskId))
+            if (createResponse.TaskId != null)
             {
-                taskId = long.Parse(createResponse.TaskId);
+                taskId = Convert.ToInt64(createResponse.TaskId);
             }
-            else if (createResponse.FileId.HasValue)
+            else if (createResponse.FileId != null)
             {
                 taskId = createResponse.FileId;
             }
 
             Assert.True(taskId != null, $"TaskId is null");
-            long? fileId = createResponse.FileId;
+            Console.WriteLine($"Created task: {taskId}");
 
-            Console.WriteLine($"Created task: {taskId}, file_id: {fileId}");
-
-            T2AAsyncV2QueryResp_status? status = null;
+            string? status = null;
             long? resultFileId = null;
 
             for (int i = 0; i < 30; i++)
             {
                 await Task.Delay(2000);
 
-                var queryResponse = await _client.V1.Query.T2a_async_query_v2.GetAsync(x => x.QueryParameters.TaskId = taskId);
+                var queryResponse = await _client.TextToAudioAsyncQueryAsync(taskId.Value);
 
                 Assert.NotNull(queryResponse);
                 Assert.NotNull(queryResponse.BaseResp);
@@ -323,17 +313,17 @@ namespace Tests
 
                 Console.WriteLine($"Poll {i + 1}: Status = {status}, FileId = {resultFileId}");
 
-                if (status == T2AAsyncV2QueryResp_status.Success || status == T2AAsyncV2QueryResp_status.Failed)
+                if (status == "success" || status == "failed")
                     break;
             }
 
-            Assert.Equal(T2AAsyncV2QueryResp_status.Success, status);
+            Assert.Equal("success", status?.ToLowerInvariant());
             Assert.NotNull(resultFileId);
             Assert.True(resultFileId > 0);
 
             Console.WriteLine($"Downloading file_id: {resultFileId}");
 
-            var fileStream = await _client.V1.Files.Retrieve_content.GetAsync(x => x.QueryParameters.FileId = resultFileId);
+            var fileStream = await _client.RetrieveFileContentAsync(resultFileId.Value);
 
             Assert.NotNull(fileStream);
             var memoryStream = new MemoryStream();

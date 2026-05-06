@@ -2,31 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Kiota.Http.HttpClientLibrary;
-using Microsoft.Kiota.Abstractions;
 using Xunit;
-using MiniMax.Models;
-using MiniMaxClient = MiniMax.MiniMaxClient;
+using MiniMax;
+using MiniMax.Models.Anthropic;
 
 namespace Tests
 {
     public class AnthropicMessagesTests : IDisposable
     {
-        private readonly HttpClient _httpClient;
         private readonly MiniMaxClient _client;
 
         public AnthropicMessagesTests()
         {
             var apiKey = Environment.GetEnvironmentVariable("MINIMAX_API_KEY") ?? throw new InvalidOperationException("MINIMAX_API_KEY not set");
-            var authHandler = new AuthHandler(new HttpClientHandler(), apiKey);
-            _httpClient = new HttpClient(authHandler);
-            var adapter = new HttpClientRequestAdapter(new FixedAuthProvider(), null, null, _httpClient, null);
-            _client = new MiniMaxClient(adapter);
+            _client = new MiniMaxClient(apiKey);
         }
 
         public void Dispose()
         {
-            _httpClient.Dispose();
+            _client.Dispose();
         }
 
         [Fact]
@@ -34,19 +28,19 @@ namespace Tests
         {
             var request = new CreateMessageReq
             {
-                Model = CreateMessageReq_model.MiniMaxM27,
+                Model = "MiniMax-M2.7",
                 MaxTokens = 1024,
-                Messages = new List<Message>
+                Messages = new List<ContentBlock>
                 {
-                    new Message
+                    new ContentBlock
                     {
-                        Role = Message_role.User,
-                        Content = new Message.Message_content { String = "Hello, who are you?" }
+                        Role = "user",
+                        Content = "Hello, who are you?"
                     }
                 }
             };
 
-            var response = await _client.Anthropic.V1.Messages.PostAsync(request);
+            var response = await _client.CreateAnthropicMessageAsync(request);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
@@ -59,7 +53,8 @@ namespace Tests
             Console.WriteLine($"StopReason: {response.StopReason}");
             foreach (var block in response.Content)
             {
-                Console.WriteLine($"Content: {block.Text}");
+                if (!string.IsNullOrEmpty(block.Text))
+                    Console.WriteLine($"Content: {block.Text}");
             }
         }
 
@@ -68,21 +63,28 @@ namespace Tests
         {
             var request = new CreateMessageReq
             {
-                Model = CreateMessageReq_model.MiniMaxM27,
+                Model = "MiniMax-M2.7",
                 MaxTokens = 1024,
                 Temperature = 0.7,
-                System = new CreateMessageReq.CreateMessageReq_system { String = "You are a helpful assistant." },
-                Messages = new List<Message>
+                SystemInstruction = new List<ContentBlock>
                 {
-                    new Message
+                    new ContentBlock
                     {
-                        Role = Message_role.User,
-                        Content = new Message.Message_content { String = "What is the capital of France?" }
+                        Content = "You are a helpful assistant.",
+                        Type = "text"
+                    }
+                },
+                Messages = new List<ContentBlock>
+                {
+                    new ContentBlock
+                    {
+                        Role = "user",
+                        Content = "What is the capital of France?"
                     }
                 }
             };
 
-            var response = await _client.Anthropic.V1.Messages.PostAsync(request);
+            var response = await _client.CreateAnthropicMessageAsync(request);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
@@ -97,19 +99,19 @@ namespace Tests
         {
             var request = new CreateMessageReq
             {
-                Model = CreateMessageReq_model.MiniMaxM21,
+                Model = "MiniMax-M2.1",
                 MaxTokens = 512,
-                Messages = new List<Message>
+                Messages = new List<ContentBlock>
                 {
-                    new Message
+                    new ContentBlock
                     {
-                        Role = Message_role.User,
-                        Content = new Message.Message_content { String = "Give me a short answer: 2+2=?" }
+                        Role = "user",
+                        Content = "Give me a short answer: 2+2=?"
                     }
                 }
             };
 
-            var response = await _client.Anthropic.V1.Messages.PostAsync(request);
+            var response = await _client.CreateAnthropicMessageAsync(request);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
@@ -127,29 +129,29 @@ namespace Tests
         {
             var request = new CreateMessageReq
             {
-                Model = CreateMessageReq_model.MiniMaxM27,
+                Model = "MiniMax-M2.7",
                 MaxTokens = 1024,
-                Messages = new List<Message>
+                Messages = new List<ContentBlock>
                 {
-                    new Message
+                    new ContentBlock
                     {
-                        Role = Message_role.User,
-                        Content = new Message.Message_content { String = "My name is Alice." }
+                        Role = "user",
+                        Content = "My name is Alice."
                     },
-                    new Message
+                    new ContentBlock
                     {
-                        Role = Message_role.Assistant,
-                        Content = new Message.Message_content { String = "Hello Alice! How can I help you today?" }
+                        Role = "assistant",
+                        Content = "Hello Alice! How can I help you today?"
                     },
-                    new Message
+                    new ContentBlock
                     {
-                        Role = Message_role.User,
-                        Content = new Message.Message_content { String = "What is my name?" }
+                        Role = "user",
+                        Content = "What is my name?"
                     }
                 }
             };
 
-            var response = await _client.Anthropic.V1.Messages.PostAsync(request);
+            var response = await _client.CreateAnthropicMessageAsync(request);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);

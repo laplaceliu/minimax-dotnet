@@ -9,15 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="MiniMax">
-      <HintPath>../bin/Debug/net10.0/MiniMax.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="../MiniMax.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageReference Include="Microsoft.Kiota.Bundle" Version="1.22.1" />
-    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.22.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

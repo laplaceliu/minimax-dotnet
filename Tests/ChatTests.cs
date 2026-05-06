@@ -2,31 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Kiota.Http.HttpClientLibrary;
-using Microsoft.Kiota.Abstractions;
 using Xunit;
-using MiniMax.Models;
-using MiniMaxClient = MiniMax.MiniMaxClient;
+using MiniMax;
+using MiniMax.Models.Chat;
 
 namespace Tests
 {
     public class ChatTests : IDisposable
     {
-        private readonly HttpClient _httpClient;
         private readonly MiniMaxClient _client;
 
         public ChatTests()
         {
             var apiKey = Environment.GetEnvironmentVariable("MINIMAX_API_KEY") ?? throw new InvalidOperationException("MINIMAX_API_KEY not set");
-            var authHandler = new AuthHandler(new HttpClientHandler(), apiKey);
-            _httpClient = new HttpClient(authHandler);
-            var adapter = new HttpClientRequestAdapter(new FixedAuthProvider(), null, null, _httpClient, null);
-            _client = new MiniMaxClient(adapter);
+            _client = new MiniMaxClient(apiKey);
         }
 
         public void Dispose()
         {
-            _httpClient.Dispose();
+            _client.Dispose();
         }
 
         [Fact]
@@ -34,18 +28,18 @@ namespace Tests
         {
             var request = new ChatCompletionReq
             {
-                Model = ChatCompletionReq_model.MiniMaxM27,
+                Model = "MiniMax-M2.7",
                 Messages = new List<Message>
                 {
                     new Message
                     {
-                        Role = Message_role.User,
-                        Content = new Message.Message_content { String = "Hello, who are you?" }
+                        Role = "user",
+                        Content = "Hello, who are you?"
                     }
                 }
             };
 
-            var response = await _client.V1.Chat.Completions.PostAsync(request);
+            var response = await _client.ChatCompletionAsync(request);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);

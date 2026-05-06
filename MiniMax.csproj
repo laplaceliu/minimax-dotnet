@@ -4,15 +4,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <DefineConstants>$(DefineConstants);NETCOREAPP3_1_OR_GREATER;NETSTANDARD2_1_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Tests/**/*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Kiota.Bundle" Version="1.22.1" />
+    <Compile Remove="V1/**/*.cs" />
   </ItemGroup>
 
 </Project>
