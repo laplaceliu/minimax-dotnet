@@ -75,6 +75,43 @@ namespace Tests
         }
 
         [Fact]
+        public void ErrorCodes_Provides_Friendly_Messages()
+        {
+            var error1008 = ErrorCodes.GetErrorInfo(1008);
+            Assert.NotNull(error1008);
+            Assert.Equal("余额不足", error1008.Reason);
+            Assert.Contains("账户余额", error1008.FriendlyMessage);
+
+            var error2049 = ErrorCodes.GetErrorInfo(2049);
+            Assert.NotNull(error2049);
+            Assert.Equal("无效的API Key", error2049.Reason);
+
+            var error1026 = ErrorCodes.GetErrorInfo(1026);
+            Assert.NotNull(error1026);
+            Assert.Equal("输入内容涉敏", error1026.Reason);
+
+            var unknownError = ErrorCodes.GetErrorInfo(9999);
+            Assert.Null(unknownError);
+
+            Assert.Equal("请稍后再试或联系我们", ErrorCodes.GetFriendlyMessage(9999));
+            Assert.Equal("请检查您的账户余额", ErrorCodes.GetFriendlyMessage(1008));
+        }
+
+        [Fact]
+        public void MiniMaxException_Shows_Friendly_Message()
+        {
+            var ex = new MiniMaxException(1008, "insufficient balance");
+            Assert.Equal(1008, ex.StatusCode);
+            Assert.Equal("余额不足", ex.Reason);
+            Assert.Contains("请检查您的账户余额", ex.Message);
+            Assert.Contains("1008", ex.Message);
+
+            var ex2 = new MiniMaxException(2049);
+            Assert.Equal(2049, ex2.StatusCode);
+            Assert.Contains("无效的API Key", ex2.Message);
+        }
+
+        [Fact]
         public async Task Voice_Get_All_Success()
         {
             var request = new GetVoiceReq
