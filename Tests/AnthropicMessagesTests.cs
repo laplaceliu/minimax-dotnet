@@ -53,11 +53,9 @@ namespace Tests
             Console.WriteLine($"Response ID: {response.Id}");
             Console.WriteLine($"Model: {response.Model}");
             Console.WriteLine($"StopReason: {response.StopReason}");
-            foreach (var block in response.Content)
-            {
-                if (!string.IsNullOrEmpty(block.Text))
-                    Console.WriteLine($"Content: {block.Text}");
-            }
+            var textBlock = response.Content.FirstOrDefault(b => b.Type == "text");
+            if (textBlock != null)
+                Console.WriteLine($"Response: {textBlock.Text}");
         }
 
         [Fact]
@@ -93,7 +91,9 @@ namespace Tests
             Assert.True(response.BaseResp.StatusCode == 0, $"StatusCode: {response.BaseResp.StatusCode}");
             Assert.NotNull(response.Content);
             Assert.NotEmpty(response.Content);
-            Console.WriteLine($"Response: {response.Content[0].Text}");
+            var textBlock = response.Content.FirstOrDefault(b => b.Type == "text");
+            Assert.NotNull(textBlock);
+            Console.WriteLine($"Response: {textBlock.Text}");
         }
 
         [Fact]
@@ -123,7 +123,9 @@ namespace Tests
             Assert.NotNull(response.Usage);
             Console.WriteLine($"Input Tokens: {response.Usage.InputTokens}");
             Console.WriteLine($"Output Tokens: {response.Usage.OutputTokens}");
-            Console.WriteLine($"Response: {response.Content[0].Text}");
+            var textBlock = response.Content.FirstOrDefault(b => b.Type == "text");
+            Assert.NotNull(textBlock);
+            Console.WriteLine($"Response: {textBlock.Text}");
         }
 
         [Fact]
@@ -160,7 +162,9 @@ namespace Tests
             Assert.True(response.BaseResp.StatusCode == 0, $"StatusCode: {response.BaseResp.StatusCode}");
             Assert.NotNull(response.Content);
             Assert.NotEmpty(response.Content);
-            Console.WriteLine($"Response: {response.Content[0].Text}");
+            var textBlock = response.Content.FirstOrDefault(b => b.Type == "text");
+            Assert.NotNull(textBlock);
+            Console.WriteLine($"Response: {textBlock.Text}");
         }
     }
 }
