@@ -67,17 +67,29 @@ public static class Enums
     {
         [JsonPropertyName("MiniMax-Hailuo-2.3")]
         MiniMaxHailuo23,
+        [JsonPropertyName("MiniMax-Hailuo-2.3-Fast")]
+        MiniMaxHailuo23Fast,
         [JsonPropertyName("MiniMax-Hailuo-02")]
         MiniMaxHailuo02,
         [JsonPropertyName("T2V-01-Director")]
         T2V01Director,
         [JsonPropertyName("T2V-01")]
-        T2V01
+        T2V01,
+        [JsonPropertyName("I2V-01-Director")]
+        I2V01Director,
+        [JsonPropertyName("I2V-01-live")]
+        I2V01Live,
+        [JsonPropertyName("I2V-01")]
+        I2V01,
+        [JsonPropertyName("S2V-01")]
+        S2V01
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum VideoResolution
     {
+        [JsonPropertyName("512P")]
+        P512,
         [JsonPropertyName("720P")]
         P720,
         [JsonPropertyName("768P")]

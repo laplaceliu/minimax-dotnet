@@ -23,11 +23,29 @@ public class VideoGenerationReq
     [JsonPropertyName("resolution")]
     public VideoResolution Resolution { get; set; } = VideoResolution.P768;
 
+    [JsonPropertyName("first_frame_image")]
+    public string? FirstFrameImage { get; set; }
+
+    [JsonPropertyName("last_frame_image")]
+    public string? LastFrameImage { get; set; }
+
+    [JsonPropertyName("subject_reference")]
+    public List<SubjectReference>? SubjectReference { get; set; }
+
     [JsonPropertyName("callback_url")]
     public string? CallbackUrl { get; set; }
 
     [JsonPropertyName("aigc_watermark")]
     public bool AigcWatermark { get; set; } = false;
+}
+
+public class SubjectReference
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "character";
+
+    [JsonPropertyName("image")]
+    public List<string> Image { get; set; } = new();
 }
 
 public class VideoGenerationResp
