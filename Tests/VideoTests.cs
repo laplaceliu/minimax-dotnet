@@ -114,7 +114,7 @@ namespace Tests
             Assert.NotNull(fileResponse);
             Assert.NotNull(fileResponse.BaseResp);
             Assert.True(fileResponse.BaseResp.StatusCode == 0, $"Retrieve failed: {fileResponse.BaseResp.StatusCode}");
-            Console.WriteLine($"File retrieved: {fileResponse.Filename}");
+            Console.WriteLine($"File retrieved: {fileResponse.File?.Filename}");
         }
 
         [Fact]

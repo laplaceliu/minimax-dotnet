@@ -52,7 +52,7 @@ namespace Tests
                 {
                     SampleRate = AudioSampleRate.Rate32000,
                     Bitrate = AudioBitrate.Rate128000,
-                    Format = AudioFormat.Mp3
+                    Format = T2AAudioFormat.Mp3
                 }
             };
 

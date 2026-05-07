@@ -74,8 +74,8 @@ namespace Tests
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
             Assert.True(response.BaseResp.StatusCode == 0, $"StatusCode: {response.BaseResp.StatusCode}");
-            Assert.NotNull(response.TaskId);
-            Console.WriteLine($"TaskId: {response.TaskId}");
+            Assert.NotNull(response.SongTitle);
+            Console.WriteLine($"SongTitle: {response.SongTitle}, Lyrics: {response.Lyrics?.Substring(0, Math.Min(100, response.Lyrics.Length))}");
         }
 
         [Fact]

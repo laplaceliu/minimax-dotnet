@@ -134,6 +134,28 @@ public static class Enums
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum T2AAudioFormat
+    {
+        [JsonPropertyName("mp3")]
+        Mp3,
+        [JsonPropertyName("pcm")]
+        Pcm,
+        [JsonPropertyName("flac")]
+        Flac,
+        [JsonPropertyName("wav")]
+        Wav
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum T2AOutputFormat
+    {
+        [JsonPropertyName("url")]
+        Url,
+        [JsonPropertyName("hex")]
+        Hex
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AudioSampleRate
     {
         [JsonPropertyName("8000")]
@@ -337,8 +359,12 @@ public static class Enums
         VoiceClone,
         [JsonPropertyName("prompt_audio")]
         PromptAudio,
+        [JsonPropertyName("t2a_async")]
+        T2aAsync,
         [JsonPropertyName("t2a_async_input")]
-        T2aAsyncInput
+        T2aAsyncInput,
+        [JsonPropertyName("video_generation")]
+        VideoGeneration
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]

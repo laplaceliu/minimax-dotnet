@@ -52,4 +52,10 @@ public class T2aV2ExtraInfo
 
     [JsonPropertyName("invisible_character_ratio")]
     public float InvisibleCharacterRatio { get; set; }
+
+    [JsonPropertyName("usage_characters")]
+    public int UsageCharacters { get; set; }
+
+    [JsonPropertyName("word_count")]
+    public int WordCount { get; set; }
 }

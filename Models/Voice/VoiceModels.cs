@@ -45,16 +45,19 @@ public class ClonePrompt
 public class VoiceCloneResp
 {
     [JsonPropertyName("input_sensitive")]
-    public bool InputSensitive { get; set; }
-
-    [JsonPropertyName("input_sensitive_type")]
-    public int? InputSensitiveType { get; set; }
+    public InputSensitive? InputSensitive { get; set; }
 
     [JsonPropertyName("demo_audio")]
     public string? DemoAudio { get; set; }
 
     [JsonPropertyName("base_resp")]
     public Core.BaseResp? BaseResp { get; set; }
+}
+
+public class InputSensitive
+{
+    [JsonPropertyName("type")]
+    public int Type { get; set; }
 }
 
 public class GetVoiceReq
@@ -125,6 +128,12 @@ public class DeleteVoiceReq
 
 public class DeleteVoiceResp
 {
+    [JsonPropertyName("voice_id")]
+    public string VoiceId { get; set; } = string.Empty;
+
+    [JsonPropertyName("created_time")]
+    public string CreatedTime { get; set; } = string.Empty;
+
     [JsonPropertyName("base_resp")]
     public Core.BaseResp? BaseResp { get; set; }
 }

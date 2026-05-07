@@ -85,8 +85,8 @@ namespace Tests
             Assert.NotNull(retrieveResponse.BaseResp);
             Console.WriteLine($"Retrieve StatusCode: {retrieveResponse.BaseResp.StatusCode}, StatusMsg: {retrieveResponse.BaseResp.StatusMsg}");
             Assert.True(retrieveResponse.BaseResp.StatusCode == 0, $"StatusCode: {retrieveResponse.BaseResp.StatusCode}");
-            Assert.NotNull(retrieveResponse.Filename);
-            Console.WriteLine($"Retrieved FileId: {retrieveResponse.FileId}, Filename: {retrieveResponse.Filename}, Bytes: {retrieveResponse.Bytes}");
+            Assert.NotNull(retrieveResponse.File);
+            Console.WriteLine($"Retrieved FileId: {retrieveResponse.File?.FileId}, Filename: {retrieveResponse.File?.Filename}, Bytes: {retrieveResponse.File?.Bytes}");
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace Tests
             var fileId = uploadResponse.File!.FileId;
             Console.WriteLine($"Uploaded file for deletion: {fileId}");
 
-            var deleteRequest = new DeleteFileReq { FileId = fileId };
+            var deleteRequest = new DeleteFileReq { FileId = fileId, Purpose = "t2a_async_input" };
             var deleteResponse = await _client.DeleteFileAsync(deleteRequest);
 
             Assert.NotNull(deleteResponse);
@@ -137,8 +137,8 @@ namespace Tests
             Assert.NotNull(retrieveResponse);
             Assert.NotNull(retrieveResponse.BaseResp);
             Assert.True(retrieveResponse.BaseResp.StatusCode == 0, "Retrieve failed");
-            Assert.NotNull(retrieveResponse.Filename);
-            Console.WriteLine($"Retrieved File - FileId: {retrieveResponse.FileId}, Filename: {retrieveResponse.Filename}");
+            Assert.NotNull(retrieveResponse.File);
+            Console.WriteLine($"Retrieved File - FileId: {retrieveResponse.File?.FileId}, Filename: {retrieveResponse.File?.Filename}");
 
             var fileStream = await _client.RetrieveFileContentAsync(fileId);
             Assert.NotNull(fileStream);

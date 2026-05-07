@@ -122,35 +122,29 @@ public class GenerateLyricsReq
 
 public class GenerateLyricsResp
 {
-    [JsonPropertyName("task_id")]
-    public string TaskId { get; set; } = string.Empty;
-
-    [JsonPropertyName("base_resp")]
-    public Core.BaseResp? BaseResp { get; set; }
-
     [JsonPropertyName("song_title")]
     public string? SongTitle { get; set; }
+
+    [JsonPropertyName("style_tags")]
+    public string? StyleTags { get; set; }
 
     [JsonPropertyName("lyrics")]
     public string? Lyrics { get; set; }
 
-    [JsonPropertyName("style_tags")]
-    public string? StyleTags { get; set; }
+    [JsonPropertyName("base_resp")]
+    public Core.BaseResp? BaseResp { get; set; }
 }
 
 public class CoverPreprocessReq
 {
     [JsonPropertyName("model")]
-    public string Model { get; set; } = "cover-preprocess-01";
+    public string Model { get; set; } = "music-cover";
+
+    [JsonPropertyName("audio_url")]
+    public string? AudioUrl { get; set; }
 
     [JsonPropertyName("audio_base64")]
     public string? AudioBase64 { get; set; }
-
-    [JsonPropertyName("audio_file_id")]
-    public string? AudioFileId { get; set; }
-
-    [JsonPropertyName("prompt")]
-    public string Prompt { get; set; } = string.Empty;
 }
 
 public class CoverPreprocessResp
@@ -164,9 +158,12 @@ public class CoverPreprocessResp
     [JsonPropertyName("formatted_lyrics")]
     public string? FormattedLyrics { get; set; }
 
+    [JsonPropertyName("structure_result")]
+    public string? StructureResult { get; set; }
+
     [JsonPropertyName("audio_duration")]
     public double? AudioDuration { get; set; }
 
-    [JsonPropertyName("structure_result")]
-    public string? StructureResult { get; set; }
+    [JsonPropertyName("trace_id")]
+    public string? TraceId { get; set; }
 }
