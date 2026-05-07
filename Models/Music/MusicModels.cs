@@ -108,7 +108,7 @@ public class GenerateLyricsReq
     public string Prompt { get; set; } = string.Empty;
 
     [JsonPropertyName("mode")]
-    public string Mode { get; set; } = "text2lyrics";
+    public LyricsMode Mode { get; set; } = LyricsMode.WriteFullSong;
 
     [JsonPropertyName("title")]
     public string? Title { get; set; }

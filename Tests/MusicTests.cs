@@ -65,7 +65,7 @@ namespace Tests
         {
             var request = new GenerateLyricsReq
             {
-                Mode = "text2lyrics",
+                Mode = LyricsMode.WriteFullSong,
                 Prompt = "一首关于春天和希望的抒情歌曲，温暖而充满活力"
             };
 
@@ -83,7 +83,7 @@ namespace Tests
         {
             var request = new GenerateLyricsReq
             {
-                Mode = "text2lyrics",
+                Mode = LyricsMode.WriteFullSong,
                 Prompt = "一首轻快的流行歌曲",
                 Title = "青春的旋律"
             };
@@ -110,7 +110,7 @@ namespace Tests
 
             var request = new GenerateLyricsReq
             {
-                Mode = "edit",
+                Mode = LyricsMode.Edit,
                 Prompt = "续写这段歌词，保持相同的风格",
                 Lyrics = existingLyrics
             };
@@ -145,13 +145,26 @@ namespace Tests
                 OutputFormat = MusicOutputFormat.Url
             };
 
-            var response = await _client.GenerateMusicAsync(request);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            var response = await _client.GenerateMusicAsync(request, cts.Token);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
             Assert.True(response.BaseResp.StatusCode == 0, $"StatusCode: {response.BaseResp.StatusCode}");
             Assert.NotNull(response.Data);
+            Assert.NotNull(response.Data.Audio);
             Console.WriteLine($"Music Data Status: {response.Data.Status}");
+
+            var outputPath = Path.Combine(_outputDir, "music26_output.mp3");
+            await DownloadFileAsync(response.Data.Audio, outputPath);
+            Assert.True(File.Exists(outputPath));
+            Assert.True(new FileInfo(outputPath).Length > 0);
+            Console.WriteLine($"Music saved to: {outputPath}");
+
+            if (response.ExtraInfo != null)
+            {
+                Console.WriteLine($"Duration: {response.ExtraInfo.MusicDuration}ms");
+            }
         }
 
         [Fact]
@@ -165,13 +178,21 @@ namespace Tests
                 OutputFormat = MusicOutputFormat.Url
             };
 
-            var response = await _client.GenerateMusicAsync(request);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            var response = await _client.GenerateMusicAsync(request, cts.Token);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
             Assert.True(response.BaseResp.StatusCode == 0, $"StatusCode: {response.BaseResp.StatusCode}");
             Assert.NotNull(response.Data);
+            Assert.NotNull(response.Data.Audio);
             Console.WriteLine($"Music Data Status: {response.Data.Status}");
+
+            var outputPath = Path.Combine(_outputDir, "instrumental_output.mp3");
+            await DownloadFileAsync(response.Data.Audio, outputPath);
+            Assert.True(File.Exists(outputPath));
+            Assert.True(new FileInfo(outputPath).Length > 0);
+            Console.WriteLine($"Music saved to: {outputPath}");
         }
 
         [Fact]
@@ -196,13 +217,29 @@ namespace Tests
                 OutputFormat = MusicOutputFormat.Url
             };
 
-            var response = await _client.GenerateMusicAsync(request);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            var response = await _client.GenerateMusicAsync(request, cts.Token);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
             Assert.True(response.BaseResp.StatusCode == 0, $"StatusCode: {response.BaseResp.StatusCode}");
             Assert.NotNull(response.Data);
+            Assert.NotNull(response.Data.Audio);
             Console.WriteLine($"Music Data Status: {response.Data.Status}");
+
+            var outputPath = Path.Combine(_outputDir, "electronic_output.mp3");
+            await DownloadFileAsync(response.Data.Audio, outputPath);
+            Assert.True(File.Exists(outputPath));
+            Assert.True(new FileInfo(outputPath).Length > 0);
+            Console.WriteLine($"Music saved to: {outputPath}");
+
+            if (response.ExtraInfo != null)
+            {
+                Console.WriteLine($"Duration: {response.ExtraInfo.MusicDuration}ms");
+                Console.WriteLine($"Sample Rate: {response.ExtraInfo.MusicSampleRate}");
+                Console.WriteLine($"Bitrate: {response.ExtraInfo.Bitrate}");
+                Console.WriteLine($"Size: {response.ExtraInfo.MusicSize} bytes");
+            }
         }
 
         [Fact]
@@ -252,13 +289,21 @@ namespace Tests
                 OutputFormat = MusicOutputFormat.Url
             };
 
-            var musicResponse = await _client.GenerateMusicAsync(musicRequest);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            var musicResponse = await _client.GenerateMusicAsync(musicRequest, cts.Token);
 
             Assert.NotNull(musicResponse);
             Assert.NotNull(musicResponse.BaseResp);
             Assert.True(musicResponse.BaseResp.StatusCode == 0, $"StatusCode: {musicResponse.BaseResp.StatusCode}");
             Assert.NotNull(musicResponse.Data);
+            Assert.NotNull(musicResponse.Data.Audio);
             Console.WriteLine($"Cover music Data Status: {musicResponse.Data.Status}");
+
+            var outputPath = Path.Combine(_outputDir, "cover_output.mp3");
+            await DownloadFileAsync(musicResponse.Data.Audio, outputPath);
+            Assert.True(File.Exists(outputPath));
+            Assert.True(new FileInfo(outputPath).Length > 0);
+            Console.WriteLine($"Cover music saved to: {outputPath}");
         }
 
         private async Task DownloadFileAsync(string url, string outputPath)

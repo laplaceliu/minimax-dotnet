@@ -301,6 +301,15 @@ public static class Enums
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum LyricsMode
+    {
+        [JsonPropertyName("write_full_song")]
+        WriteFullSong,
+        [JsonPropertyName("edit")]
+        Edit
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum VoiceType
     {
         [JsonPropertyName("system")]
