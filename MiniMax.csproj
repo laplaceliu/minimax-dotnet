@@ -6,17 +6,22 @@
     <Nullable>enable</Nullable>
 
     <PackageId>MiniMax-DotNet</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.2</Version>
     <Authors>Your Name</Authors>
     <Description>MiniMax AI Platform .NET SDK - 支持 Chat, T2A, T2V, I2V, S2V, FL2V, Music, Speech, Voice Clone 等功能</Description>
-    <RepositoryUrl>https://github.com/anomalyco/minimax-dotnet</RepositoryUrl>
+    <RepositoryUrl>https://github.com/laplaceliu/minimax-dotnet</RepositoryUrl>
     <PackageTags>minimax;ai;chat;tts;video-generation;music</PackageTags>
     <License>MIT</License>
+    <PackageReadme>README.md</PackageReadme>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Tests/**/*.cs" />
     <Compile Remove="V1/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
