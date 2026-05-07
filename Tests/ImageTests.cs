@@ -64,27 +64,58 @@ namespace Tests
         [Fact]
         public async Task ImageToImage_Success()
         {
-            var t2iRequest = new ImageGenerationReq
+            var portraitRequest = new ImageGenerationReq
             {
                 Model = ImageModel.Image01,
-                Prompt = "A man in a white t-shirt, full-body, standing front view, outdoors",
+                Prompt = "A beautiful young woman with long black hair, portrait photo, front view, realistic",
                 AspectRatio = ImageAspectRatio.R1_1,
                 ResponseFormat = ImageResponseFormat.Url,
                 N = 1
             };
 
-            var t2iResponse = await _client.GenerateImageAsync(t2iRequest);
+            var portraitResponse = await _client.GenerateImageAsync(portraitRequest);
 
-            Assert.NotNull(t2iResponse);
-            Assert.NotNull(t2iResponse.Data);
-            Assert.NotNull(t2iResponse.Data.ImageUrls);
-            Assert.NotEmpty(t2iResponse.Data.ImageUrls);
+            Assert.NotNull(portraitResponse);
+            Assert.NotNull(portraitResponse.BaseResp);
+            Assert.True(portraitResponse.BaseResp.StatusCode == 0, $"StatusCode: {portraitResponse.BaseResp.StatusCode}");
+            Assert.NotNull(portraitResponse.Data);
+            Assert.NotNull(portraitResponse.Data.ImageUrls);
+            Assert.NotEmpty(portraitResponse.Data.ImageUrls);
 
-            var inputPath = await DownloadImageAsync(t2iResponse.Data.ImageUrls[0], "i2i_input.jpg");
-            Console.WriteLine("Input image saved to: " + inputPath);
+            var inputPath = await DownloadImageAsync(portraitResponse.Data.ImageUrls[0], "i2i_portrait.jpg");
+            Console.WriteLine("Portrait image saved to: " + inputPath);
 
-            Console.WriteLine("Note: ImageToImage (subject_reference) requires additional model support");
-            Console.WriteLine("This test is simplified - actual I2I needs subject_reference parameter");
+            var imageBase64 = await ImageToBase64Async(inputPath);
+
+            var i2iRequest = new ImageGenerationReq
+            {
+                Model = ImageModel.Image01,
+                Prompt = "The same person wearing a red dress, elegant style, professional photography",
+                AspectRatio = ImageAspectRatio.R16_9,
+                ResponseFormat = ImageResponseFormat.Url,
+                N = 1,
+                SubjectReference = new List<ImageSubjectReference>
+                {
+                    new ImageSubjectReference
+                    {
+                        Type = "character",
+                        ImageFile = imageBase64
+                    }
+                }
+            };
+
+            var i2iResponse = await _client.GenerateImageAsync(i2iRequest);
+
+            Assert.NotNull(i2iResponse);
+            Assert.NotNull(i2iResponse.BaseResp);
+            Assert.True(i2iResponse.BaseResp.StatusCode == 0, $"StatusCode: {i2iResponse.BaseResp.StatusCode}");
+            Assert.NotNull(i2iResponse.Data);
+            Assert.NotNull(i2iResponse.Data.ImageUrls);
+            Assert.NotEmpty(i2iResponse.Data.ImageUrls);
+
+            var outputPath = await DownloadImageAsync(i2iResponse.Data.ImageUrls[0], "i2i_output.jpg");
+            Console.WriteLine("I2I image saved to: " + outputPath);
+            Assert.True(new FileInfo(outputPath).Length > 0);
         }
 
         private async Task<string> DownloadImageAsync(string url, string fileName)
@@ -96,6 +127,13 @@ namespace Tests
             var bytes = await response.Content.ReadAsByteArrayAsync();
             await File.WriteAllBytesAsync(path, bytes);
             return path;
+        }
+
+        private async Task<string> ImageToBase64Async(string imagePath)
+        {
+            var bytes = await File.ReadAllBytesAsync(imagePath);
+            var base64 = Convert.ToBase64String(bytes);
+            return $"data:image/jpeg;base64,{base64}";
         }
     }
 }

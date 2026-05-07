@@ -87,8 +87,8 @@ public class ImageData
 public class ImageMetadata
 {
     [JsonPropertyName("success_count")]
-    public int SuccessCount { get; set; }
+    public string SuccessCount { get; set; } = "0";
 
     [JsonPropertyName("failed_count")]
-    public int FailedCount { get; set; }
+    public string FailedCount { get; set; } = "0";
 }
