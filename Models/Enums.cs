@@ -48,8 +48,16 @@ public static class Enums
     {
         [JsonPropertyName("MiniMax-M2.7")]
         M2_7,
+        [JsonPropertyName("MiniMax-M2.7-highspeed")]
+        M2_7Highspeed,
+        [JsonPropertyName("MiniMax-M2.5")]
+        M2_5,
+        [JsonPropertyName("MiniMax-M2.5-highspeed")]
+        M2_5Highspeed,
         [JsonPropertyName("MiniMax-M2.1")]
         M2_1,
+        [JsonPropertyName("MiniMax-M2.1-highspeed")]
+        M2_1Highspeed,
         [JsonPropertyName("MiniMax-M2")]
         M2
     }

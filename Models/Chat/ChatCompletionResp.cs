@@ -26,8 +26,17 @@ public class ChatCompletionResp
     [JsonPropertyName("input_sensitive")]
     public bool InputSensitive { get; set; }
 
+    [JsonPropertyName("input_sensitive_type")]
+    public int? InputSensitiveType { get; set; }
+
     [JsonPropertyName("output_sensitive")]
     public bool OutputSensitive { get; set; }
+
+    [JsonPropertyName("output_sensitive_type")]
+    public int? OutputSensitiveType { get; set; }
+
+    [JsonPropertyName("output_sensitive_int")]
+    public int? OutputSensitiveInt { get; set; }
 
     [JsonPropertyName("base_resp")]
     public BaseResp? BaseResp { get; set; }
@@ -58,4 +67,16 @@ public class Usage
 
     [JsonPropertyName("total_tokens")]
     public int TotalTokens { get; set; }
+
+    [JsonPropertyName("total_characters")]
+    public int TotalCharacters { get; set; }
+
+    [JsonPropertyName("prompt_tokens_details")]
+    public PromptTokensDetails? PromptTokensDetails { get; set; }
+}
+
+public class PromptTokensDetails
+{
+    [JsonPropertyName("cached_tokens")]
+    public int CachedTokens { get; set; }
 }
