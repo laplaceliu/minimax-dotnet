@@ -128,9 +128,7 @@ namespace Tests
             Console.WriteLine($"Downloading from: {downloadUrl}");
 
             var outputPath = Path.Combine(_outputDir, $"video_{fileId}.mp4");
-            using var downloadClient = new HttpClient();
-            var videoBytes = await downloadClient.GetByteArrayAsync(downloadUrl);
-            await File.WriteAllBytesAsync(outputPath, videoBytes);
+            await DownloadFileAsync(downloadUrl, outputPath);
             Console.WriteLine($"Video downloaded to: {outputPath}");
             Assert.True(File.Exists(outputPath), "Video file should exist after download");
         }
@@ -244,9 +242,7 @@ namespace Tests
             Console.WriteLine($"Downloading from: {downloadUrl}");
 
             var outputPath = Path.Combine(_outputDir, $"i2v_video_{fileId}.mp4");
-            using var downloadClient = new HttpClient();
-            var videoBytes = await downloadClient.GetByteArrayAsync(downloadUrl);
-            await File.WriteAllBytesAsync(outputPath, videoBytes);
+            await DownloadFileAsync(downloadUrl, outputPath);
             Console.WriteLine($"Video downloaded to: {outputPath}");
             Assert.True(File.Exists(outputPath), "Video file should exist after download");
         }
@@ -360,7 +356,6 @@ namespace Tests
         private async Task DownloadFileAsync(string url, string outputPath)
         {
             using var downloadClient = new HttpClient();
-            downloadClient.Timeout = TimeSpan.FromMinutes(10);
             var response = await downloadClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             var bytes = await response.Content.ReadAsByteArrayAsync();

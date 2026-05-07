@@ -22,23 +22,23 @@ using static MiniMax.Models.Enums;
 
 namespace MiniMax;
 
-public class MiniMaxClient : IDisposable
-{
-    private readonly HttpClient _httpClient;
-    private readonly string _apiKey;
-    private readonly JsonSerializerOptions _jsonOptions;
-
-    public MiniMaxClient(string apiKey, HttpClient? httpClient = null)
+    public class MiniMaxClient : IDisposable
     {
-        _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
-        _httpClient = httpClient ?? new HttpClient();
-        _jsonOptions = new JsonSerializerOptions
+        private readonly HttpClient _httpClient;
+        private readonly string _apiKey;
+        private readonly JsonSerializerOptions _jsonOptions;
+
+        public MiniMaxClient(string apiKey, HttpClient? httpClient = null)
         {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonEnumStringConverter(), new StringToNumberConverter() }
-        };
-    }
+            _apiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
+            _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Converters = { new JsonEnumStringConverter(), new StringToNumberConverter() }
+            };
+        }
 
     private void AddAuthHeader(HttpRequestMessage request)
     {

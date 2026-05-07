@@ -145,7 +145,7 @@ namespace Tests
                 OutputFormat = MusicOutputFormat.Url
             };
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
             var response = await _client.GenerateMusicAsync(request, cts.Token);
 
             Assert.NotNull(response);
@@ -178,7 +178,7 @@ namespace Tests
                 OutputFormat = MusicOutputFormat.Url
             };
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
             var response = await _client.GenerateMusicAsync(request, cts.Token);
 
             Assert.NotNull(response);
@@ -217,7 +217,7 @@ namespace Tests
                 OutputFormat = MusicOutputFormat.Url
             };
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
             var response = await _client.GenerateMusicAsync(request, cts.Token);
 
             Assert.NotNull(response);
@@ -289,7 +289,7 @@ namespace Tests
                 OutputFormat = MusicOutputFormat.Url
             };
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
             var musicResponse = await _client.GenerateMusicAsync(musicRequest, cts.Token);
 
             Assert.NotNull(musicResponse);
