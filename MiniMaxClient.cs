@@ -18,6 +18,7 @@ using MiniMax.Models.Music;
 using MiniMax.Models.Speech;
 using MiniMax.Models.Video;
 using MiniMax.Models.Voice;
+using static MiniMax.Models.Enums;
 
 namespace MiniMax;
 
@@ -35,7 +36,7 @@ public class MiniMaxClient : IDisposable
         {
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonEnumStringConverter() }
+            Converters = { new JsonEnumStringConverter(), new StringToNumberConverter() }
         };
     }
 
@@ -341,7 +342,7 @@ public class QueryVideoGenerationResp
     public string TaskId { get; set; } = string.Empty;
 
     [JsonPropertyName("status")]
-    public string Status { get; set; } = string.Empty;
+    public VideoProcessStatus Status { get; set; } = VideoProcessStatus.Preparing;
 
     [JsonPropertyName("file_id")]
     public string? FileId { get; set; }
