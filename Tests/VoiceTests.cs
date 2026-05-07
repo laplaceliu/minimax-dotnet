@@ -46,7 +46,7 @@ namespace Tests
             }
 
             var fileBytes = await File.ReadAllBytesAsync(promptFilePath);
-            var response = await _client.UploadFileAsync("prompt_audio", fileBytes, "clone_prompt.wav");
+            var response = await _client.UploadFileAsync(FilePurpose.PromptAudio, fileBytes, "clone_prompt.wav");
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
@@ -71,7 +71,7 @@ namespace Tests
             }
 
             var fileBytes = await File.ReadAllBytesAsync(inputFilePath);
-            var response = await _client.UploadFileAsync("voice_clone", fileBytes, "clone_input.wav");
+            var response = await _client.UploadFileAsync(FilePurpose.VoiceClone, fileBytes, "clone_input.wav");
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);

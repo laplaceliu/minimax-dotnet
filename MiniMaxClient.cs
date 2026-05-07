@@ -214,7 +214,7 @@ public class MiniMaxClient : IDisposable
     }
 
     public async Task<UploadFileResp> UploadFileAsync(
-        string purpose,
+        FilePurpose purpose,
         byte[] fileBytes,
         string fileName,
         CancellationToken cancellationToken = default)
@@ -226,7 +226,7 @@ public class MiniMaxClient : IDisposable
         var boundary = Guid.NewGuid().ToString("N");
         var multipartContent = new MultipartFormDataContent(boundary);
 
-        var purposeContent = new StringContent(purpose);
+        var purposeContent = new StringContent(purpose.ToString().ToLowerInvariant());
         purposeContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
             Name = "purpose"

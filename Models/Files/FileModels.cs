@@ -27,7 +27,7 @@ public class DeleteFileReq
     public long FileId { get; set; }
 
     [JsonPropertyName("purpose")]
-    public string Purpose { get; set; } = string.Empty;
+    public FilePurpose Purpose { get; set; } = FilePurpose.T2aAsyncInput;
 }
 
 public class DeleteFileResp

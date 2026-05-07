@@ -6,6 +6,7 @@ using Xunit;
 using MiniMax;
 using MiniMax.Models;
 using MiniMax.Models.Files;
+using static MiniMax.Models.Enums;
 
 namespace Tests
 {
@@ -35,7 +36,7 @@ namespace Tests
             await File.WriteAllTextAsync(testFilePath, testContent);
 
             var fileBytes = await File.ReadAllBytesAsync(testFilePath);
-            var response = await _client.UploadFileAsync("t2a_async_input", fileBytes, "test_input.txt");
+            var response = await _client.UploadFileAsync(FilePurpose.T2aAsyncInput, fileBytes, "test_input.txt");
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
@@ -97,7 +98,7 @@ namespace Tests
             await File.WriteAllTextAsync(testFilePath, testContent);
 
             var fileBytes = await File.ReadAllBytesAsync(testFilePath);
-            var uploadResponse = await _client.UploadFileAsync("t2a_async_input", fileBytes, "test_delete.txt");
+            var uploadResponse = await _client.UploadFileAsync(FilePurpose.T2aAsyncInput, fileBytes, "test_delete.txt");
 
             Assert.NotNull(uploadResponse);
             Assert.NotNull(uploadResponse.BaseResp);
@@ -105,7 +106,7 @@ namespace Tests
             var fileId = uploadResponse.File!.FileId;
             Console.WriteLine($"Uploaded file for deletion: {fileId}");
 
-            var deleteRequest = new DeleteFileReq { FileId = fileId, Purpose = "t2a_async_input" };
+            var deleteRequest = new DeleteFileReq { FileId = fileId, Purpose = FilePurpose.T2aAsyncInput };
             var deleteResponse = await _client.DeleteFileAsync(deleteRequest);
 
             Assert.NotNull(deleteResponse);
@@ -124,7 +125,7 @@ namespace Tests
             await File.WriteAllTextAsync(testFilePath, testContent);
 
             var fileBytes = await File.ReadAllBytesAsync(testFilePath);
-            var uploadResponse = await _client.UploadFileAsync("t2a_async_input", fileBytes, "test_upload_download.txt");
+            var uploadResponse = await _client.UploadFileAsync(FilePurpose.T2aAsyncInput, fileBytes, "test_upload_download.txt");
 
             Assert.NotNull(uploadResponse);
             Assert.NotNull(uploadResponse.BaseResp);
