@@ -49,12 +49,17 @@ public class JsonEnumStringConverter : JsonConverterFactory
 
         public override TEnum Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType != JsonTokenType.String)
+            string? stringValue = null;
+
+            if (reader.TokenType == JsonTokenType.String)
             {
-                throw new JsonException($"Expected string value for enum {typeToConvert.Name}");
+                stringValue = reader.GetString();
+            }
+            else if (reader.TokenType == JsonTokenType.Number)
+            {
+                stringValue = reader.GetInt64().ToString();
             }
 
-            var stringValue = reader.GetString();
             if (stringValue != null && _stringToEnum.TryGetValue(stringValue, out var enumValue))
             {
                 return enumValue;
@@ -67,7 +72,14 @@ public class JsonEnumStringConverter : JsonConverterFactory
         {
             if (_enumToString.TryGetValue(value, out var stringValue))
             {
-                writer.WriteStringValue(stringValue);
+                if (long.TryParse(stringValue, out var numValue))
+                {
+                    writer.WriteNumberValue(numValue);
+                }
+                else
+                {
+                    writer.WriteStringValue(stringValue);
+                }
             }
             else
             {

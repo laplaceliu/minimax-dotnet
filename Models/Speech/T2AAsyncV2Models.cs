@@ -93,7 +93,7 @@ public class VoiceModify
 public class T2AAsyncV2Resp
 {
     [JsonPropertyName("task_id")]
-    public string TaskId { get; set; } = string.Empty;
+    public long TaskId { get; set; }
 
     [JsonPropertyName("file_id")]
     public long FileId { get; set; }

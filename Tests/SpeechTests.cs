@@ -229,28 +229,58 @@ namespace Tests
             Console.WriteLine($"Create StatusCode: {createResponse.BaseResp.StatusCode}, StatusMsg: {createResponse.BaseResp.StatusMsg}");
             Assert.True(createResponse.BaseResp.StatusCode == 0, $"StatusCode: {createResponse.BaseResp.StatusCode}");
 
-            long? taskId = null;
-            if (createResponse.TaskId != null)
-            {
-                taskId = Convert.ToInt64(createResponse.TaskId);
-                Console.WriteLine($"TaskId from property: {taskId}");
-            }
-            else
-            {
-                taskId = createResponse.FileId;
-                Console.WriteLine($"TaskId from FileId property: {taskId}");
-            }
+            var taskId = createResponse.TaskId;
+            Assert.True(taskId > 0, $"TaskId is not valid: {taskId}");
+            Console.WriteLine($"TaskId: {taskId}");
 
-            Assert.True(taskId != null, $"TaskId is null");
-            Console.WriteLine($"Parsed TaskId: {taskId}");
-
-            var queryResponse = await _client.TextToAudioAsyncQueryAsync(taskId.Value);
+            var queryResponse = await _client.TextToAudioAsyncQueryAsync(taskId);
 
             Assert.NotNull(queryResponse);
             Assert.NotNull(queryResponse.BaseResp);
             Console.WriteLine($"Query StatusCode: {queryResponse.BaseResp.StatusCode}, Status: {queryResponse.Status}");
             Assert.True(queryResponse.BaseResp.StatusCode == 0, $"StatusCode: {queryResponse.BaseResp.StatusCode}");
-            Console.WriteLine($"Task Status: {queryResponse.Status}");
+
+            string? status = null;
+            long? resultFileId = null;
+
+            for (int i = 0; i < 30; i++)
+            {
+                await Task.Delay(2000);
+
+                queryResponse = await _client.TextToAudioAsyncQueryAsync(taskId);
+
+                Assert.NotNull(queryResponse);
+                Assert.NotNull(queryResponse.BaseResp);
+                Assert.True(queryResponse.BaseResp.StatusCode == 0, $"Query StatusCode: {queryResponse.BaseResp.StatusCode}");
+
+                status = queryResponse.Status;
+                resultFileId = queryResponse.FileId;
+
+                Console.WriteLine($"Poll {i + 1}: Status = {status}, FileId = {resultFileId}");
+
+                if (status?.ToLowerInvariant() == "success" || status?.ToLowerInvariant() == "failed")
+                    break;
+            }
+
+            Assert.Equal("success", status?.ToLowerInvariant());
+            Assert.NotNull(resultFileId);
+            Assert.True(resultFileId > 0);
+
+            Console.WriteLine($"Downloading file_id: {resultFileId}");
+
+            var fileStream = await _client.RetrieveFileContentAsync(resultFileId.Value);
+
+            Assert.NotNull(fileStream);
+            var memoryStream = new MemoryStream();
+            await fileStream.CopyToAsync(memoryStream);
+            var audioBytes = memoryStream.ToArray();
+
+            Assert.True(audioBytes.Length > 0, "Downloaded audio is empty");
+            Console.WriteLine($"Downloaded audio size: {audioBytes.Length} bytes");
+
+            var audioPath = Path.Combine(_outputDir, "async_create_query.mp3");
+            await File.WriteAllBytesAsync(audioPath, audioBytes);
+            Console.WriteLine($"Audio saved to: {audioPath}");
         }
 
         [Fact]
@@ -282,17 +312,8 @@ namespace Tests
             Assert.NotNull(createResponse.BaseResp);
             Assert.True(createResponse.BaseResp.StatusCode == 0, $"Create StatusCode: {createResponse.BaseResp.StatusCode}");
 
-            long? taskId = null;
-            if (createResponse.TaskId != null)
-            {
-                taskId = Convert.ToInt64(createResponse.TaskId);
-            }
-            else
-            {
-                taskId = createResponse.FileId;
-            }
-
-            Assert.True(taskId != null, $"TaskId is null");
+            var taskId = createResponse.TaskId;
+            Assert.True(taskId > 0, $"TaskId is not valid: {taskId}");
             Console.WriteLine($"Created task: {taskId}");
 
             string? status = null;
@@ -302,7 +323,7 @@ namespace Tests
             {
                 await Task.Delay(2000);
 
-                var queryResponse = await _client.TextToAudioAsyncQueryAsync(taskId.Value);
+                var queryResponse = await _client.TextToAudioAsyncQueryAsync(taskId);
 
                 Assert.NotNull(queryResponse);
                 Assert.NotNull(queryResponse.BaseResp);
@@ -313,7 +334,7 @@ namespace Tests
 
                 Console.WriteLine($"Poll {i + 1}: Status = {status}, FileId = {resultFileId}");
 
-                if (status == "success" || status == "failed")
+                if (status?.ToLowerInvariant() == "success" || status?.ToLowerInvariant() == "failed")
                     break;
             }
 
