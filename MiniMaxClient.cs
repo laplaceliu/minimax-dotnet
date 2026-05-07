@@ -223,14 +223,14 @@ public class MiniMaxClient : IDisposable
         AddAuthHeader(request);
 
         var boundary = Guid.NewGuid().ToString("N");
-        var content = new MultipartContent("mixed", boundary);
+        var multipartContent = new MultipartFormDataContent(boundary);
 
-        var purposeContent = new StringContent($"\"{purpose}\"", Encoding.UTF8, "application/json");
+        var purposeContent = new StringContent(purpose);
         purposeContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
             Name = "purpose"
         };
-        content.Add(purposeContent);
+        multipartContent.Add(purposeContent);
 
         var fileContent = new ByteArrayContent(fileBytes);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
@@ -238,10 +238,18 @@ public class MiniMaxClient : IDisposable
             Name = "file",
             FileName = fileName
         };
-        fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-        content.Add(fileContent);
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        var mediaType = extension switch
+        {
+            ".mp3" => "audio/mpeg",
+            ".m4a" => "audio/mp4",
+            ".wav" => "audio/wav",
+            _ => "application/octet-stream"
+        };
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
+        multipartContent.Add(fileContent);
 
-        request.Content = content;
+        request.Content = multipartContent;
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
