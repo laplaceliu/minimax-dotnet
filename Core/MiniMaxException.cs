@@ -1,9 +1,7 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace MiniMax.Core;
 
-[Serializable]
 public class MiniMaxException : Exception
 {
     public int StatusCode { get; }
@@ -22,21 +20,6 @@ public class MiniMaxException : Exception
         StatusCode = statusCode;
         var errorInfo = ErrorCodes.GetErrorInfo(statusCode);
         Reason = errorInfo?.Reason ?? statusMsg;
-    }
-
-    protected MiniMaxException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-        StatusCode = info.GetInt32(nameof(StatusCode));
-        Reason = info.GetString(nameof(Reason));
-    }
-
-    [Obsolete("This API supports obsolete formatter-based serialization.")]
-    public override void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        base.GetObjectData(info, context);
-        info.AddValue(nameof(StatusCode), StatusCode);
-        info.AddValue(nameof(Reason), Reason);
     }
 
     private static string FormatMessage(int statusCode, string? statusMsg)

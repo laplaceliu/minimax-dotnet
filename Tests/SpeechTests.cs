@@ -235,7 +235,7 @@ namespace Tests
                 taskId = Convert.ToInt64(createResponse.TaskId);
                 Console.WriteLine($"TaskId from property: {taskId}");
             }
-            else if (createResponse.FileId != null)
+            else
             {
                 taskId = createResponse.FileId;
                 Console.WriteLine($"TaskId from FileId property: {taskId}");
@@ -287,7 +287,7 @@ namespace Tests
             {
                 taskId = Convert.ToInt64(createResponse.TaskId);
             }
-            else if (createResponse.FileId != null)
+            else
             {
                 taskId = createResponse.FileId;
             }
