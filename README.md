@@ -126,7 +126,7 @@ mcpClient.Dispose();
 
 ## Features
 
-- **Chat**: 支持 Abab6.5S, Abab6.5G, ChatGLM4 等模型
+- **Chat**: 支持 MiniMax-M2.7, MiniMax-M2.5, MiniMax-M2.1 等模型
 - **T2A**: Text-to-Speech 语音合成
 - **T2V**: Text-to-Video 文生视频
 - **I2V**: Image-to-Video 图生视频
