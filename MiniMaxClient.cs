@@ -35,7 +35,7 @@ public class MiniMaxClient : IDisposable
         {
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) }
+            Converters = { new JsonEnumStringConverter() }
         };
     }
 
