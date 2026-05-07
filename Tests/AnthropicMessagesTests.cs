@@ -4,7 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using MiniMax;
+using MiniMax.Models;
 using MiniMax.Models.Anthropic;
+using static MiniMax.Models.Enums;
 
 namespace Tests
 {
@@ -28,7 +30,7 @@ namespace Tests
         {
             var request = new CreateMessageReq
             {
-                Model = "MiniMax-M2.7",
+                Model = ChatModel.M2_7,
                 MaxTokens = 1024,
                 Messages = new List<ContentBlock>
                 {
@@ -63,7 +65,7 @@ namespace Tests
         {
             var request = new CreateMessageReq
             {
-                Model = "MiniMax-M2.7",
+                Model = ChatModel.M2_7,
                 MaxTokens = 1024,
                 Temperature = 0.7,
                 SystemInstruction = new List<ContentBlock>
@@ -99,7 +101,7 @@ namespace Tests
         {
             var request = new CreateMessageReq
             {
-                Model = "MiniMax-M2.1",
+                Model = ChatModel.M2_1,
                 MaxTokens = 512,
                 Messages = new List<ContentBlock>
                 {
@@ -129,7 +131,7 @@ namespace Tests
         {
             var request = new CreateMessageReq
             {
-                Model = "MiniMax-M2.7",
+                Model = ChatModel.M2_7,
                 MaxTokens = 1024,
                 Messages = new List<ContentBlock>
                 {

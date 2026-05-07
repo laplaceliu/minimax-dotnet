@@ -1,11 +1,12 @@
 using System.Text.Json.Serialization;
+using static MiniMax.Models.Enums;
 
 namespace MiniMax.Models.Anthropic;
 
 public class CreateMessageReq
 {
     [JsonPropertyName("model")]
-    public string Model { get; set; } = "MiniMax-M2.7";
+    public ChatModel Model { get; set; } = ChatModel.M2_7;
 
     [JsonPropertyName("messages")]
     public List<ContentBlock> Messages { get; set; } = new();

@@ -1,11 +1,12 @@
 using System.Text.Json.Serialization;
+using static MiniMax.Models.Enums;
 
 namespace MiniMax.Models.Chat;
 
 public class ChatCompletionReq
 {
     [JsonPropertyName("model")]
-    public string Model { get; set; } = "MiniMax-M2.7";
+    public ChatModel Model { get; set; } = ChatModel.M2_7;
 
     [JsonPropertyName("stream")]
     public bool Stream { get; set; } = false;

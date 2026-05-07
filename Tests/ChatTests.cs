@@ -4,7 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using MiniMax;
+using MiniMax.Models;
 using MiniMax.Models.Chat;
+using static MiniMax.Models.Enums;
 
 namespace Tests
 {
@@ -28,7 +30,7 @@ namespace Tests
         {
             var request = new ChatCompletionReq
             {
-                Model = "MiniMax-M2.7",
+                Model = ChatModel.M2_7,
                 Messages = new List<Message>
                 {
                     new Message

@@ -44,6 +44,17 @@ public static class Enums
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum ChatModel
+    {
+        [JsonPropertyName("MiniMax-M2.7")]
+        M2_7,
+        [JsonPropertyName("MiniMax-M2.1")]
+        M2_1,
+        [JsonPropertyName("MiniMax-M2")]
+        M2
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum VideoModel
     {
         [JsonPropertyName("MiniMax-Hailuo-2.3")]
