@@ -96,7 +96,7 @@ namespace Tests
         [Fact]
         public async Task Voice_Get_All_Success()
         {
-            var response = await _client.GetVoiceAsync();
+            var response = await _client.GetVoiceAsync(VoiceType.All);
 
             Assert.NotNull(response);
             Assert.NotNull(response.BaseResp);
