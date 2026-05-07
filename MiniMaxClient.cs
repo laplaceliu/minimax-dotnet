@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -18,6 +19,7 @@ using MiniMax.Models.Music;
 using MiniMax.Models.Speech;
 using MiniMax.Models.Video;
 using MiniMax.Models.Voice;
+using MiniMax.Models.Mcp;
 using static MiniMax.Models.Enums;
 
 namespace MiniMax;
@@ -39,6 +41,14 @@ namespace MiniMax;
                 Converters = { new JsonEnumStringConverter(), new StringToNumberConverter() }
             };
         }
+
+    public McpClient CreateMcpClient(
+        string command,
+        IEnumerable<string> arguments,
+        Dictionary<string, string>? environment = null)
+    {
+        return new McpClient(command, arguments, environment);
+    }
 
     private void AddAuthHeader(HttpRequestMessage request)
     {
@@ -379,4 +389,154 @@ public class VideoInfo
 
     [JsonPropertyName("duration")]
     public int Duration { get; set; }
+}
+
+public class McpClient : IDisposable
+{
+    private readonly Process _process;
+    private readonly StreamReader _reader;
+    private readonly StreamWriter _writer;
+    private int _requestId;
+    private bool _disposed;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    public McpClient(string command, IEnumerable<string> arguments, Dictionary<string, string>? environment = null)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = command,
+            Arguments = string.Join(" ", arguments),
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        if (environment != null)
+        {
+            foreach (var kvp in environment)
+            {
+                startInfo.Environment[kvp.Key] = kvp.Value;
+            }
+        }
+
+        _process = new Process { StartInfo = startInfo };
+        _process.Start();
+
+        _reader = _process.StandardOutput;
+        _writer = _process.StandardInput;
+    }
+
+    public async Task<McpInitializeResult> InitializeAsync(CancellationToken cancellationToken = default)
+    {
+        var request = new JsonRpcRequest
+        {
+            Id = ++_requestId,
+            Method = "initialize",
+            Params = new Dictionary<string, object>
+            {
+                ["protocolVersion"] = "2024-11-05",
+                ["capabilities"] = new Dictionary<string, object>(),
+                ["clientInfo"] = new Dictionary<string, object>
+                {
+                    ["name"] = "minimax-dotnet",
+                    ["version"] = "1.0.0"
+                }
+            }
+        };
+
+        var response = await SendRequestAsync<McpInitializeResult>(request, cancellationToken);
+
+        await SendNotificationAsync("notifications/initialized", cancellationToken);
+
+        return response;
+    }
+
+    public async Task<List<McpTool>> ListToolsAsync(CancellationToken cancellationToken = default)
+    {
+        var request = new JsonRpcRequest
+        {
+            Id = ++_requestId,
+            Method = "tools/list"
+        };
+
+        var response = await SendRequestAsync<McpToolListResult>(request, cancellationToken);
+        return response?.Tools ?? new List<McpTool>();
+    }
+
+    public async Task<McpCallToolResult> CallToolAsync(string toolName, Dictionary<string, object>? arguments = null, CancellationToken cancellationToken = default)
+    {
+        var request = new JsonRpcRequest
+        {
+            Id = ++_requestId,
+            Method = "tools/call",
+            Params = new Dictionary<string, object>
+            {
+                ["name"] = toolName,
+                ["arguments"] = arguments ?? new Dictionary<string, object>()
+            }
+        };
+
+        return await SendRequestAsync<McpCallToolResult>(request, cancellationToken);
+    }
+
+    private async Task<T> SendRequestAsync<T>(JsonRpcRequest request, CancellationToken cancellationToken) where T : class
+    {
+        var json = JsonSerializer.Serialize(request, JsonOptions);
+        await _writer.WriteLineAsync(json);
+        await _writer.FlushAsync(cancellationToken);
+
+        var responseLine = await _reader.ReadLineAsync(cancellationToken);
+        if (string.IsNullOrEmpty(responseLine))
+        {
+            throw new MiniMaxException(0, "Empty response from MCP server");
+        }
+
+        var response = JsonSerializer.Deserialize<JsonRpcResponse>(responseLine, JsonOptions);
+        if (response == null)
+        {
+            throw new MiniMaxException(0, "Failed to deserialize MCP response");
+        }
+
+        if (response.Error != null)
+        {
+            throw new MiniMaxException(response.Error.Code, response.Error.Message);
+        }
+
+        if (response.Result == null)
+        {
+            throw new MiniMaxException(0, "No result in MCP response");
+        }
+
+        var resultJson = response.Result.Value.GetRawText();
+        return JsonSerializer.Deserialize<T>(resultJson, JsonOptions) ?? throw new MiniMaxException(0, "Failed to deserialize MCP result");
+    }
+
+    private async Task SendNotificationAsync(string method, CancellationToken cancellationToken)
+    {
+        var notification = new { jsonrpc = "2.0", method };
+        var json = JsonSerializer.Serialize(notification, JsonOptions);
+        await _writer.WriteLineAsync(json);
+        await _writer.FlushAsync(cancellationToken);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+
+        if (!_process.HasExited)
+        {
+            _process.Kill(true);
+        }
+
+        _reader.Dispose();
+        _writer.Dispose();
+        _process.Dispose();
+        _disposed = true;
+    }
 }
