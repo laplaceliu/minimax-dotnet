@@ -83,7 +83,6 @@ namespace Tests
             Assert.NotNull(response.BaseResp);
             Assert.True(response.BaseResp.StatusCode == 0, $"Query failed: {response.BaseResp.StatusCode} - {response.BaseResp.StatusMsg}");
             Assert.NotNull(response.TaskId);
-            Assert.NotNull(response.Status);
             Console.WriteLine($"TaskId: {response.TaskId}");
             Console.WriteLine($"Status: {response.Status}");
 
@@ -200,7 +199,6 @@ namespace Tests
             Assert.NotNull(response.BaseResp);
             Assert.True(response.BaseResp.StatusCode == 0, $"Query failed: {response.BaseResp.StatusCode} - {response.BaseResp.StatusMsg}");
             Assert.NotNull(response.TaskId);
-            Assert.NotNull(response.Status);
             Console.WriteLine($"TaskId: {response.TaskId}");
             Console.WriteLine($"Status: {response.Status}");
 

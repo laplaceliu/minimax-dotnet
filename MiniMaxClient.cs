@@ -226,7 +226,16 @@ public class MiniMaxClient : IDisposable
         var boundary = Guid.NewGuid().ToString("N");
         var multipartContent = new MultipartFormDataContent(boundary);
 
-        var purposeContent = new StringContent(purpose.ToString().ToLowerInvariant());
+        var purposeString = purpose switch
+        {
+            FilePurpose.VoiceClone => "voice_clone",
+            FilePurpose.PromptAudio => "prompt_audio",
+            FilePurpose.T2aAsync => "t2a_async",
+            FilePurpose.T2aAsyncInput => "t2a_async_input",
+            FilePurpose.VideoGeneration => "video_generation",
+            _ => purpose.ToString().ToLowerInvariant()
+        };
+        var purposeContent = new StringContent(purposeString);
         purposeContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
             Name = "purpose"
