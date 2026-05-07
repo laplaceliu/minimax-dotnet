@@ -18,7 +18,7 @@ var client = new MiniMaxClient("your-api-key");
 // Chat
 var chatResponse = await client.ChatAsync(new ChatReq
 {
-    Model = ChatModel.Abab6_5SChat,
+    Model = ChatModel.M2_7,
     Messages = new List<ChatMessage>
     {
         new ChatMessage { Role = "user", Content = "Hello!" }
